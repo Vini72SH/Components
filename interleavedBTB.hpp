@@ -1,11 +1,10 @@
-#define BANK_SIZE 256
-#define INTER_FACTOR 4
-
 /**
  * @file component.hpp
  * @brief Public API of the component template class.
  */
 
+#include <cstdint>
+#include <sys/types.h>
 class Linkable {};
 
 /**
@@ -61,32 +60,37 @@ struct InstructionMessage {
 
 class TwoBitPredictor {};
 
+struct btb_entry;
+typedef btb_entry* btb_bank;
+
 struct btb_entry {
     private:
         TwoBitPredictor* simplePredictor;
         long int fetchTarget;
+        bool validBit;
     public:
         btb_entry();
+        void allocate();
         bool getPrediction();
         long int getFetchTarget();
         ~btb_entry();
 };
 
-typedef btb_entry btb_bank[BANK_SIZE];
-
 class BranchTargetBuffer : public Component<InstructionMessage> {
     private:
-        long int latency;
-        long int totalBranches;
-        long int totalHits;
+        uint latency;
+        uint totalBranches;
+        uint32_t totalHits;
+        uint32_t nextFetchBlock;
         bool* instructionValidBits;
-        long int nextFetchBlock;
-        btb_bank interleavedBTB[INTER_FACTOR];
+        btb_bank* banks;
+        uint numBanks, numEntries;
     public:
         BranchTargetBuffer();
+        void allocate(uint latency, uint numBanks, uint numEntries);
         bool* getValidInstructions();
         long int getNextFetchAddress();
         void updateInfo(long int fetchAddress, bool trueHit);
-        void registerNewEntry(long int fetchAddress, long int* fetchTargets);
+        void registerNewEntry(uint32_t fetchAddress, long int* fetchTargets);
         ~BranchTargetBuffer();
 };
