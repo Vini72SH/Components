@@ -1,8 +1,7 @@
 /**
- * @file component.hpp
- * @brief Public API of the component template class.
+ * @file interleavedBTB.hpp
+ * @brief Implementation of Interleaved Branch Target Buffer
  */
-
 #include <cstdint>
 #include <sys/types.h>
 class Linkable {};
@@ -68,29 +67,35 @@ struct btb_entry {
         TwoBitPredictor* simplePredictor;
         long int fetchTarget;
         bool validBit;
+
     public:
         btb_entry();
+
+        /**
+         * @brief Only allocates the BTB entry
+         */
         void allocate();
-        bool getPrediction();
-        long int getFetchTarget();
         ~btb_entry();
 };
 
 class BranchTargetBuffer : public Component<InstructionMessage> {
     private:
-        uint latency;
         uint totalBranches;
         uint32_t totalHits;
         uint32_t nextFetchBlock;
         bool* instructionValidBits;
         btb_bank* banks;
         uint numBanks, numEntries;
+
     public:
         BranchTargetBuffer();
-        void allocate(uint latency, uint numBanks, uint numEntries);
-        bool* getValidInstructions();
-        long int getNextFetchAddress();
-        void updateInfo(long int fetchAddress, bool trueHit);
-        void registerNewEntry(uint32_t fetchAddress, long int* fetchTargets);
+
+        /**
+         * @brief Allocate the BTB
+         * @param numBanks Number of bits used to index the banks (2 bits = 4 banks)
+         * @param numEntries Number of bits used to index the entries (8 bits = 256 entries)
+         */
+        void allocate(uint numBanks, uint numEntries);
+
         ~BranchTargetBuffer();
 };
