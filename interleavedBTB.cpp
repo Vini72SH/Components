@@ -4,58 +4,60 @@
     Two Bit Predictor Methods
    ========================================================================== */
 
-        TwoBitPredictor::TwoBitPredictor() : prediction(2) {};
+TwoBitPredictor::TwoBitPredictor() : prediction(2) {};
 
-        bool TwoBitPredictor::getPrediction() {
-            return (prediction >> 1);
-        };
+bool TwoBitPredictor::getPrediction() {
+    return (prediction >> 1);
+};
 
-        void TwoBitPredictor::updatePrediction(bool branchTaken) {
-            if ((branchTaken) && (prediction < 3)) {
-                prediction++;
-            }
+void TwoBitPredictor::updatePrediction(bool branchTaken) {
+    if ((branchTaken) && (prediction < 3)) {
+        prediction++;
+    }
 
-            if ((!branchTaken) && (prediction > 0)) {
-                prediction--;
-            }
-        };
+    if ((!branchTaken) && (prediction > 0)) {
+        prediction--;
+    }
+};
 
-        TwoBitPredictor::~TwoBitPredictor() {};
+TwoBitPredictor::~TwoBitPredictor() {};
 
 
 /* ==========================================================================
     BTB Entry Methods
    ========================================================================== */
 
-    btb_entry::btb_entry() : simplePredictor(nullptr) {};
+btb_entry::btb_entry() : simplePredictor(nullptr) {};
 
-    void btb_entry::allocate() {
-        simplePredictor = new TwoBitPredictor();
-        fetchTarget = 0;
-        validBit = false;
-    };
+void btb_entry::allocate() {
+    simplePredictor = new TwoBitPredictor();
+    fetchTarget = 0;
+    validBit = false;
+};
 
-    bool btb_entry::getPrediction() {
-        return simplePredictor->getPrediction();
-    };
+bool btb_entry::getPrediction() {
+    return simplePredictor->getPrediction();
+};
 
-    void btb_entry::updateEntry(bool branchTaken) {
-        simplePredictor->updatePrediction(branchTaken);
-    };
+void btb_entry::updateEntry(bool branchTaken) {
+    simplePredictor->updatePrediction(branchTaken);
+};
 
-    void btb_entry::updateEntry(uint32_t fetchTarget, bool branchTaken) {
-        this->validBit = true;
-        this->fetchTarget = fetchTarget;
-        simplePredictor->updatePrediction(branchTaken);
-    };
+void btb_entry::updateEntry(uint32_t fetchTarget, bool branchTaken) {
+    this->validBit = true;
+    this->fetchTarget = fetchTarget;
+    simplePredictor->updatePrediction(branchTaken);
+};
 
-    btb_entry::~btb_entry() {
-        delete simplePredictor;
-    };
+btb_entry::~btb_entry() {
+    delete simplePredictor;
+};
 
 /* ==========================================================================
     Interleaved BTB Methods
    ========================================================================== */
+
+
 
 BranchTargetBuffer::BranchTargetBuffer() : instructionValidBits(nullptr), banks(nullptr) {};
 
