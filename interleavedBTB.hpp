@@ -57,16 +57,25 @@ struct InstructionMessage {
     long int pc;
 };
 
-class TwoBitPredictor {};
+class TwoBitPredictor {
+    private:
+        uint8_t prediction;
+    
+    public:
+        TwoBitPredictor();
+        bool getPrediction();
+        void updatePrediction(bool branchTaken);
+        ~TwoBitPredictor();
+};
 
 struct btb_entry;
 typedef btb_entry* btb_bank;
 
 struct btb_entry {
     private:
-        TwoBitPredictor* simplePredictor;
-        long int fetchTarget;
         bool validBit;
+        uint32_t fetchTarget;
+        TwoBitPredictor* simplePredictor;
 
     public:
         btb_entry();
@@ -75,6 +84,22 @@ struct btb_entry {
          * @brief Only allocates the BTB entry
          */
         void allocate();
+
+        /**
+         * @brief Wrapper to TwoBitPredictor Method
+         */
+        bool getPrediction();
+
+        /**
+         * @brief Updates the BTB entry with the branch result
+         */
+        void updateEntry(bool branchTaken);
+
+        /**
+         * @brief Updates BTB input, setting target address and updating prediction
+         */
+        void updateEntry(uint32_t fetchTarget, bool branchTaken);
+
         ~btb_entry();
 };
 
