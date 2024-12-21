@@ -112,6 +112,14 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
         btb_bank* banks;
         uint numBanks, numEntries;
 
+        /**
+         * @brief Calculate the index to access the correct BTB entry
+         * @param fetchAddress Address used to access BTB
+         * @details The method calculates an index within a fixed range by applying bitwise shifts and masks. 
+         * Aligning the fetch address with the interleaving factor and obtaining the index of the respective BTB entry for the fetch address.
+         * @return The index to access BTB
+         */
+        int getIndex(uint32_t fetchAddress);
     public:
         BranchTargetBuffer();
 

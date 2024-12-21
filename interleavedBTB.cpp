@@ -57,9 +57,15 @@ btb_entry::~btb_entry() {
     Interleaved BTB Methods
    ========================================================================== */
 
-
-
 BranchTargetBuffer::BranchTargetBuffer() : instructionValidBits(nullptr), banks(nullptr) {};
+
+int BranchTargetBuffer::getIndex(uint32_t fetchAddress) {
+    int index = fetchAddress;
+    index = index >> numBanks;
+    index = index & ((1 << numEntries) - 1);
+
+    return index;
+};
 
 void BranchTargetBuffer::allocate(uint numBanks, uint numEntries) {
     this->numBanks = numBanks;
