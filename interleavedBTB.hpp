@@ -4,6 +4,10 @@
  */
 #include <cstdint>
 #include <sys/types.h>
+
+#define NOTALLOCATED 0
+#define ALLOCATED 1
+
 class Linkable {};
 
 /**
@@ -81,9 +85,19 @@ struct btb_entry {
         btb_entry();
 
         /**
-         * @brief Only allocates the BTB entry
+         * @brief Allocates the BTB entry
          */
         void allocate();
+
+        /**
+         * @brief Gets the valid bit of entry
+         */
+        bool getValid();
+
+        /**
+         * @brief Gets the fetch target
+         */
+        uint32_t getTarget();
 
         /**
          * @brief Wrapper to TwoBitPredictor Method
@@ -119,7 +133,7 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
          * Aligning the fetch address with the interleaving factor and obtaining the index of the respective BTB entry for the fetch address.
          * @return The index to access BTB
          */
-        int getIndex(uint32_t fetchAddress);
+        uint32_t getIndex(uint32_t fetchAddress);
     public:
         BranchTargetBuffer();
 
@@ -129,6 +143,42 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
          * @param numEntries Number of bits used to index the entries (8 bits = 256 entries)
          */
         void allocate(uint numBanks, uint numEntries);
+
+        /**
+         * @return The address of next instruction block
+         */
+        uint32_t getNextFetchBlock();
+
+        /**
+         * @return The instructions predicted as executable from the instruction block
+         */
+        const bool* getInstructionValidBits();
+
+        /**
+         * @brief Make a query on BTB from an address
+         * @param fetchAddress The address used to fetch block
+         * @details This method sets the "nextFetchBlock" and "instructionValidBits" attributes after querying the BTB and determining which instructions are predicted to be executable and the address of the next fetch block.
+         * If the entry is not yet allocated, it assumes that the next fetch block is sequential and that all instructions will be executed.
+         * @return Returns a message to the procedure calling the method, indicating whether the BTB entry is allocated or not allocated, as these cases require different procedures later.
+         */
+        int fetchBTBEntry(uint32_t fetchAddress);
+
+        /**
+         * @brief Update the BTB
+         * @param fetchAddress The fetch address of the block
+         * @param executedInstructions An interleaving factor aligned vector containing the information whether each of the instructions in the block was executed
+         * @details This method is used when the BTB entry has already been allocated to a certain address, so it is enough to update the prediction of all the instructions in the block.
+         */
+        void updateBTBEntries(uint32_t fetchAddress, bool* executedInstructions);
+
+        /**
+         * @brief Update the BTB
+         * @param fetchAddress The fetch address of the block
+         * @param fetchTarget The fetchs targets of the block
+         * @param executedInstructions An interleaving factor aligned vector containing the information whether each of the instructions in the block was executed
+         * @details This method is used when the BTB entry has not yet been allocated, so it is necessary to define the instruction block fetch target and instantiate the two-bit predictor.
+         */
+        void updateBTBEntries(uint32_t fetchAddress, uint32_t *fetchTargets, bool* executedInstructions);
 
         ~BranchTargetBuffer();
 };

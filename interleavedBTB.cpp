@@ -1,4 +1,5 @@
 #include "interleavedBTB.hpp"
+#include <cstdint>
 
 /* ==========================================================================
     Two Bit Predictor Methods
@@ -27,12 +28,20 @@ TwoBitPredictor::~TwoBitPredictor() {};
     BTB Entry Methods
    ========================================================================== */
 
-btb_entry::btb_entry() : simplePredictor(nullptr) {};
+btb_entry::btb_entry() : validBit(false), simplePredictor(nullptr) {};
 
 void btb_entry::allocate() {
-    simplePredictor = new TwoBitPredictor();
-    fetchTarget = 0;
     validBit = false;
+    fetchTarget = 0;
+    simplePredictor = new TwoBitPredictor();
+};
+
+bool btb_entry::getValid() {
+    return validBit;
+};
+
+uint32_t btb_entry::getTarget() {
+    return fetchTarget;
 };
 
 bool btb_entry::getPrediction() {
@@ -59,8 +68,8 @@ btb_entry::~btb_entry() {
 
 BranchTargetBuffer::BranchTargetBuffer() : instructionValidBits(nullptr), banks(nullptr) {};
 
-int BranchTargetBuffer::getIndex(uint32_t fetchAddress) {
-    int index = fetchAddress;
+uint32_t BranchTargetBuffer::getIndex(uint32_t fetchAddress) {
+    uint32_t index = fetchAddress;
     index = index >> numBanks;
     index = index & ((1 << numEntries) - 1);
 
@@ -82,9 +91,76 @@ void BranchTargetBuffer::allocate(uint numBanks, uint numEntries) {
         this->instructionValidBits[bank] = false;
         this->banks[bank] = new btb_entry[totalEntries];
 
-        for (int entry = 0; entry < totalEntries; ++entry) {
-            this->banks[bank][entry].allocate();
+        for (int entries = 0; entries < totalEntries; ++entries) {
+            this->banks[bank][entries].allocate();
         }
+    }
+};
+
+uint32_t BranchTargetBuffer::getNextFetchBlock() {
+    return nextFetchBlock;
+};
+
+const bool* BranchTargetBuffer::getInstructionValidBits() {
+    return instructionValidBits;
+};
+
+int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
+    uint32_t target;
+    uint32_t nextBlock = 0;
+    uint32_t index = getIndex(fetchAddress);
+
+    if (banks[0][index].getValid()) {
+        for (int i = 0; i < numBanks; ++i) {
+            if (banks[i][index].getPrediction()) {
+                target = banks[i][index].getTarget();
+                if (target != fetchAddress) {
+                    nextBlock = target; 
+                    instructionValidBits[i] = true;
+                }
+            } else {
+                instructionValidBits[i] = false;
+            }
+        }
+
+        if (nextBlock == 0) {
+            nextBlock = fetchAddress + (1 << numBanks);
+        }
+
+        nextFetchBlock = nextBlock;
+        return ALLOCATED;
+        
+    } else {
+        nextBlock = fetchAddress + (1 << numBanks);
+        nextFetchBlock = nextBlock;
+
+        for (int i = 0; i < numBanks; ++i) {
+            instructionValidBits[i] = true;
+        }
+
+        return NOTALLOCATED;
+    }
+};
+
+void BranchTargetBuffer::updateBTBEntries(uint32_t fetchAddress, bool* executedInstructions) {
+    bool executedInstruction;
+    uint32_t index = getIndex(fetchAddress);
+
+    for (int i = 0; i < numBanks; ++i) {
+        executedInstruction = executedInstructions[i];
+        banks[i][index].updateEntry(executedInstruction);
+    }
+};
+
+void BranchTargetBuffer::updateBTBEntries(uint32_t fetchAddress, uint32_t *fetchTargets, bool* executedInstructions) {
+    uint32_t fetchTarget;
+    bool executedInstruction;
+    uint32_t index = getIndex(fetchAddress);
+
+    for (int i = 0; i < numBanks; ++i) {
+        fetchTarget = fetchTargets[i];
+        executedInstruction = executedInstructions[i];
+        banks[i][index].updateEntry(fetchTarget, executedInstruction);
     }
 };
 
