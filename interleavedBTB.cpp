@@ -55,8 +55,13 @@ bool btb_entry::getPrediction() {
 };
 
 void btb_entry::setEntry(uint32_t tag, uint32_t fetchTarget) {
+    this->validBit = true;
     this->tag = tag;
     this->fetchTarget = fetchTarget;
+};
+
+void btb_entry::updatePrediction(bool branchTaken) {
+    simplePredictor->updatePrediction(branchTaken);
 };
 
 btb_entry::~btb_entry() {
@@ -113,6 +118,15 @@ const bool* BranchTargetBuffer::getInstructionValidBits() {
     return instructionValidBits;
 };
 
+void BranchTargetBuffer::registerNewBlock(uint32_t fetchAddress, uint32_t* fetchTargets) {
+    uint32_t currentTag = calculateTag(fetchAddress);
+    uint32_t index = calculateIndex(fetchAddress);
+
+    for (int bank = 0; bank < numBanks; ++bank) {
+        banks[bank][index].setEntry(currentTag, fetchTargets[bank]);
+    }
+};
+
 int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
     bool alocated = true;
     uint32_t nextBlock = 0;
@@ -145,6 +159,19 @@ int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
     }
 
     return NOTALLOCATED;
+};
+
+void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstructions) {
+    uint32_t currentTag = calculateTag(fetchAddress);
+    uint32_t index = calculateIndex(fetchAddress);
+
+    for (int bank = 0; bank < numBanks; ++bank) {
+        if (banks[bank][index].getValid()) {
+            if (banks[bank][index].getTag() == currentTag) {
+                banks[bank][index].updatePrediction(executedInstructions[bank]);
+            }
+        }
+    }
 };
 
 BranchTargetBuffer::~BranchTargetBuffer() {

@@ -115,6 +115,11 @@ struct btb_entry {
          */
         void setEntry(uint32_t tag, uint32_t fetchTarget);
 
+        /**
+         * @brief Wrapper to TwoBitPredictor Method
+         */
+        void updatePrediction(bool branchTaken);
+
         ~btb_entry();
 };
 
@@ -162,6 +167,14 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
         const bool* getInstructionValidBits();
 
         /**
+         * @brief Register a new entry in BTB
+         * @param fetchAddress The fetch address used to instruction block
+         * @param fetchTargets The array of targets for each instruction in the new block
+         * @details This method registers a new block in the BTB, defining the tag and target addresses.
+         */
+        void registerNewBlock(uint32_t fetchAddress, uint32_t* fetchTargets);
+
+        /**
          * @brief Make a query on BTB from an address
          * @param fetchAddress The address used to fetch block
          * @details This method sets the "nextFetchBlock" and "instructionValidBits" attributes after querying the BTB and determining which instructions are predicted to be executable and the address of the next fetch block.
@@ -169,6 +182,13 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
          * @return Returns a message to the procedure calling the method, indicating whether the BTB entry is allocated or not allocated, as these cases require different procedures later.
          */
         int fetchBTBEntry(uint32_t fetchAddress);
+
+        /**
+         * @brief Updates the BTB block based on the instructions that were executed
+         * @param fetchAddress The address used to fetch block
+         * @param executedInstructions An array of booleans indicating which instructions were actually executed
+         */
+        void updateBlock(uint32_t fetchAddress, bool* executedInstructions);
 
         ~BranchTargetBuffer();
 };
