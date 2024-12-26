@@ -1,5 +1,6 @@
 #include "interleavedBTB.hpp"
 #include <cstdint>
+#include <sys/types.h>
 
 /* ==========================================================================
     Two Bit Predictor Methods
@@ -68,7 +69,14 @@ btb_entry::~btb_entry() {
 
 BranchTargetBuffer::BranchTargetBuffer() : instructionValidBits(nullptr), banks(nullptr) {};
 
-uint32_t BranchTargetBuffer::getIndex(uint32_t fetchAddress) {
+uint32_t BranchTargetBuffer::calculateTag(uint32_t fetchAddress) {
+    uint32_t tag = fetchAddress;
+    tag = tag >> numBanks;
+
+    return tag;
+};
+
+uint32_t BranchTargetBuffer::calculateIndex(uint32_t fetchAddress) {
     uint32_t index = fetchAddress;
     index = index >> numBanks;
     index = index & ((1 << numEntries) - 1);
@@ -106,7 +114,37 @@ const bool* BranchTargetBuffer::getInstructionValidBits() {
 };
 
 int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
-    return 0;
+    bool alocated = true;
+    uint32_t nextBlock = 0;
+    uint32_t currentTag = calculateTag(fetchAddress);
+    uint32_t index = calculateIndex(fetchAddress);
+
+    for (int i = 0; i < numBanks; ++i) {
+        if (banks[i][index].getValid()) {
+            if (banks[i][index].getTag() == currentTag) {
+                nextBlock = banks[i][index].getTarget();
+                instructionValidBits[i] = banks[i][index].getPrediction();
+            } else {
+                alocated = false;
+                instructionValidBits[i] = true;
+            }
+        } else {
+            alocated = false;
+            instructionValidBits[i] = true;
+        }
+    }
+
+    if (nextBlock) {
+        nextFetchBlock = nextBlock;
+    } else {
+        nextFetchBlock = fetchAddress + (1 << numBanks);
+    }
+
+    if (alocated) {
+        return ALLOCATED;
+    }
+
+    return NOTALLOCATED;
 };
 
 BranchTargetBuffer::~BranchTargetBuffer() {

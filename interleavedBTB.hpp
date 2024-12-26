@@ -128,13 +128,19 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
         uint numBanks, numEntries;
 
         /**
+         * @brief Calculates the tag used to verify the BTB entry
+         * @param FetchAddress Address used to access BTB
+         * @details This method aligns the address with the interleaving factor and returns the value
+         */
+        uint32_t calculateTag(uint32_t fetchAddress);
+        /**
          * @brief Calculate the index to access the correct BTB entry
          * @param fetchAddress Address used to access BTB
          * @details The method calculates an index within a fixed range by applying bitwise shifts and masks. 
          * Aligning the fetch address with the interleaving factor and obtaining the index of the respective BTB entry for the fetch address.
          * @return The index to access BTB
          */
-        uint32_t getIndex(uint32_t fetchAddress);
+        uint32_t calculateIndex(uint32_t fetchAddress);
     public:
         BranchTargetBuffer();
 
