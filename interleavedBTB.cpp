@@ -32,12 +32,17 @@ btb_entry::btb_entry() : validBit(false), simplePredictor(nullptr) {};
 
 void btb_entry::allocate() {
     validBit = false;
+    tag = 0;
     fetchTarget = 0;
     simplePredictor = new TwoBitPredictor();
 };
 
 bool btb_entry::getValid() {
     return validBit;
+};
+
+uint32_t btb_entry::getTag() {
+    return tag;
 };
 
 uint32_t btb_entry::getTarget() {
@@ -48,14 +53,9 @@ bool btb_entry::getPrediction() {
     return simplePredictor->getPrediction();
 };
 
-void btb_entry::updateEntry(bool branchTaken) {
-    simplePredictor->updatePrediction(branchTaken);
-};
-
-void btb_entry::updateEntry(uint32_t fetchTarget, bool branchTaken) {
-    this->validBit = true;
+void btb_entry::setEntry(uint32_t tag, uint32_t fetchTarget) {
+    this->tag = tag;
     this->fetchTarget = fetchTarget;
-    simplePredictor->updatePrediction(branchTaken);
 };
 
 btb_entry::~btb_entry() {
@@ -106,62 +106,7 @@ const bool* BranchTargetBuffer::getInstructionValidBits() {
 };
 
 int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
-    uint32_t target;
-    uint32_t nextBlock = 0;
-    uint32_t index = getIndex(fetchAddress);
-
-    if (banks[0][index].getValid()) {
-        for (int i = 0; i < numBanks; ++i) {
-            if (banks[i][index].getPrediction()) {
-                target = banks[i][index].getTarget();
-                if (target != fetchAddress) {
-                    nextBlock = target; 
-                    instructionValidBits[i] = true;
-                }
-            } else {
-                instructionValidBits[i] = false;
-            }
-        }
-
-        if (nextBlock == 0) {
-            nextBlock = fetchAddress + (1 << numBanks);
-        }
-
-        nextFetchBlock = nextBlock;
-        return ALLOCATED;
-        
-    } else {
-        nextBlock = fetchAddress + (1 << numBanks);
-        nextFetchBlock = nextBlock;
-
-        for (int i = 0; i < numBanks; ++i) {
-            instructionValidBits[i] = true;
-        }
-
-        return NOTALLOCATED;
-    }
-};
-
-void BranchTargetBuffer::updateBTBEntries(uint32_t fetchAddress, bool* executedInstructions) {
-    bool executedInstruction;
-    uint32_t index = getIndex(fetchAddress);
-
-    for (int i = 0; i < numBanks; ++i) {
-        executedInstruction = executedInstructions[i];
-        banks[i][index].updateEntry(executedInstruction);
-    }
-};
-
-void BranchTargetBuffer::updateBTBEntries(uint32_t fetchAddress, uint32_t *fetchTargets, bool* executedInstructions) {
-    uint32_t fetchTarget;
-    bool executedInstruction;
-    uint32_t index = getIndex(fetchAddress);
-
-    for (int i = 0; i < numBanks; ++i) {
-        fetchTarget = fetchTargets[i];
-        executedInstruction = executedInstructions[i];
-        banks[i][index].updateEntry(fetchTarget, executedInstruction);
-    }
+    return 0;
 };
 
 BranchTargetBuffer::~BranchTargetBuffer() {

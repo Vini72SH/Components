@@ -78,6 +78,7 @@ typedef btb_entry* btb_bank;
 struct btb_entry {
     private:
         bool validBit;
+        uint32_t tag;
         uint32_t fetchTarget;
         TwoBitPredictor* simplePredictor;
 
@@ -94,6 +95,11 @@ struct btb_entry {
          */
         bool getValid();
 
+        /** 
+         * @brief Gets the tag of the entry
+         */
+        uint32_t getTag();
+
         /**
          * @brief Gets the fetch target
          */
@@ -105,14 +111,9 @@ struct btb_entry {
         bool getPrediction();
 
         /**
-         * @brief Updates the BTB entry with the branch result
+         * @brief Defines the input fields
          */
-        void updateEntry(bool branchTaken);
-
-        /**
-         * @brief Updates BTB input, setting target address and updating prediction
-         */
-        void updateEntry(uint32_t fetchTarget, bool branchTaken);
+        void setEntry(uint32_t tag, uint32_t fetchTarget);
 
         ~btb_entry();
 };
@@ -162,23 +163,6 @@ class BranchTargetBuffer : public Component<InstructionMessage> {
          * @return Returns a message to the procedure calling the method, indicating whether the BTB entry is allocated or not allocated, as these cases require different procedures later.
          */
         int fetchBTBEntry(uint32_t fetchAddress);
-
-        /**
-         * @brief Update the BTB
-         * @param fetchAddress The fetch address of the block
-         * @param executedInstructions An interleaving factor aligned vector containing the information whether each of the instructions in the block was executed
-         * @details This method is used when the BTB entry has already been allocated to a certain address, so it is enough to update the prediction of all the instructions in the block.
-         */
-        void updateBTBEntries(uint32_t fetchAddress, bool* executedInstructions);
-
-        /**
-         * @brief Update the BTB
-         * @param fetchAddress The fetch address of the block
-         * @param fetchTarget The fetchs targets of the block
-         * @param executedInstructions An interleaving factor aligned vector containing the information whether each of the instructions in the block was executed
-         * @details This method is used when the BTB entry has not yet been allocated, so it is necessary to define the instruction block fetch target and instantiate the two-bit predictor.
-         */
-        void updateBTBEntries(uint32_t fetchAddress, uint32_t *fetchTargets, bool* executedInstructions);
 
         ~BranchTargetBuffer();
 };
