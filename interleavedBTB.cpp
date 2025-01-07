@@ -155,10 +155,10 @@ int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
     }
 
     if (alocated) {
-        return ALLOCATED;
+        return ALLOCATED_ENTRY;
     }
 
-    return NOTALLOCATED;
+    return UNALLOCATED_ENTRY;
 };
 
 void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstructions) {

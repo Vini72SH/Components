@@ -5,9 +5,6 @@
 #include <cstdint>
 #include <sys/types.h>
 
-#define NOTALLOCATED 0
-#define ALLOCATED 1
-
 class Linkable {};
 
 /**
@@ -56,11 +53,6 @@ class Component : public Linkable {
     inline ~Component() {}
 };
 
-struct InstructionMessage {
-    int id;
-    long int pc;
-};
-
 class TwoBitPredictor {
     private:
         uint8_t prediction;
@@ -70,6 +62,21 @@ class TwoBitPredictor {
         bool getPrediction();
         void updatePrediction(bool branchTaken);
         ~TwoBitPredictor();
+};
+
+enum TypeBTBMessage {
+    BTB_REQUEST,
+    UNALLOCATED_ENTRY,
+    ALLOCATED_ENTRY,
+    BTB_ALLOCATION_REQUEST,
+    BTB_UPDATE_REQUEST
+};
+
+struct BTBMessage {
+    uint32_t fetchAddress;
+    uint32_t *fetchTargets;
+    bool *validBits;
+    TypeBTBMessage messageType;
 };
 
 struct btb_entry;
@@ -123,7 +130,7 @@ struct btb_entry {
         ~btb_entry();
 };
 
-class BranchTargetBuffer : public Component<InstructionMessage> {
+class BranchTargetBuffer : public Component<BTBMessage> {
     private:
         uint totalBranches;
         uint32_t totalHits;
