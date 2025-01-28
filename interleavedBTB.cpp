@@ -72,7 +72,7 @@ btb_entry::~btb_entry() {
     Interleaved BTB Methods
    ========================================================================== */
 
-BranchTargetBuffer::BranchTargetBuffer() : instructionValidBits(nullptr), banks(nullptr) {};
+BranchTargetBuffer::BranchTargetBuffer() : Component<BTBMessage>(), instructionValidBits(nullptr), banks(nullptr) {};
 
 uint32_t BranchTargetBuffer::calculateTag(uint32_t fetchAddress) {
     uint32_t tag = fetchAddress;
@@ -122,7 +122,7 @@ void BranchTargetBuffer::registerNewBlock(uint32_t fetchAddress, uint32_t* fetch
     uint32_t currentTag = calculateTag(fetchAddress);
     uint32_t index = calculateIndex(fetchAddress);
 
-    for (int bank = 0; bank < numBanks; ++bank) {
+    for (uint bank = 0; bank < numBanks; ++bank) {
         banks[bank][index].setEntry(currentTag, fetchTargets[bank]);
     }
 };
@@ -133,7 +133,7 @@ int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
     uint32_t currentTag = calculateTag(fetchAddress);
     uint32_t index = calculateIndex(fetchAddress);
 
-    for (int i = 0; i < numBanks; ++i) {
+    for (uint i = 0; i < numBanks; ++i) {
         if (banks[i][index].getValid()) {
             if (banks[i][index].getTag() == currentTag) {
                 nextBlock = banks[i][index].getTarget();
@@ -165,7 +165,7 @@ void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstru
     uint32_t currentTag = calculateTag(fetchAddress);
     uint32_t index = calculateIndex(fetchAddress);
 
-    for (int bank = 0; bank < numBanks; ++bank) {
+    for (uint bank = 0; bank < numBanks; ++bank) {
         if (banks[bank][index].getValid()) {
             if (banks[bank][index].getTag() == currentTag) {
                 banks[bank][index].updatePrediction(executedInstructions[bank]);
