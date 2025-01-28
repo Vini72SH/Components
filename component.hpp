@@ -1,6 +1,7 @@
 #ifndef COMPONENT 
 #define COMPONENT
 
+#include <cstdio>
 #include <sys/types.h>
 
 class Linkable {};
@@ -67,6 +68,16 @@ class Queue{
       return nodeData;
     };
 
+    void print () {
+      Node<MessageType>* aux;
+
+      aux = this->start;
+      while (aux) {
+        printf("%d\n", aux->data);
+        aux = aux->next;
+      }
+    }
+
     void flushQueue() {
       while(!(isEmpty())) {
         dequeue();
@@ -86,6 +97,31 @@ class Component : public Linkable {
   public:
 
     Component() : messageQueue() {};
+
+    bool isQueueEmpty() {
+      return messageQueue.isEmpty();
+    };
+
+    int queueSize() {
+      return messageQueue.queueSize();
+    }
+
+    void enqueue(MessageType data) {
+      messageQueue.enqueue(data);
+    }
+
+    MessageType dequeue() {
+      return messageQueue.dequeue();
+    }
+
+    void print() {
+      messageQueue.print();
+    }
+
+    void flushQueue() {
+      messageQueue.flushQueue();
+    }
+
     ~Component() {};
 };
 
