@@ -68,16 +68,6 @@ class Queue{
       return nodeData;
     };
 
-    void print () {
-      Node<MessageType>* aux;
-
-      aux = this->start;
-      while (aux) {
-        printf("%d\n", aux->data);
-        aux = aux->next;
-      }
-    }
-
     void flushQueue() {
       while(!(isEmpty())) {
         dequeue();
@@ -112,10 +102,6 @@ class Component : public Linkable {
 
     MessageType dequeue() {
       return messageQueue.dequeue();
-    }
-
-    void print() {
-      messageQueue.print();
     }
 
     void flushQueue() {

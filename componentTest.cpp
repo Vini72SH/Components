@@ -1,23 +1,23 @@
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include "component.hpp"
+#include "interleavedBTB.hpp"
 
 using namespace std;
 
 int main () {
-    Component<int>* comp = new Component<int>;
+    uint32_t v1[] = {10, 20, 30, 40};
+    uint32_t v2[] = {15, 25, 35, 45};
 
-    comp->enqueue(5);
-    comp->enqueue(10);
-    comp->enqueue(15);
-    comp->enqueue(20);
-    comp->enqueue(25);
+    BranchTargetBuffer* btb = new BranchTargetBuffer();
 
-    comp->print();
+    btb->allocate(4, 4);
 
-    comp->flushQueue();
+    btb->registerNewBlock(64, v1);
 
-    delete comp;
+    btb->registerNewBlock(128, v2);
+
+    delete btb;
 
     return 0;
 }

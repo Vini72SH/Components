@@ -1,5 +1,6 @@
 #include "interleavedBTB.hpp"
 #include <cstdint>
+#include <cstdlib>
 #include <sys/types.h>
 
 /* ==========================================================================
