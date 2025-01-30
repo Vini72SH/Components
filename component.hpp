@@ -24,14 +24,24 @@ class Queue{
   public:
     Queue() : size(0), start(nullptr), end(nullptr) {};
 
+    /**
+    * @brief Returns a boolean indicating whether the queue is empty
+    */
     bool isEmpty() {
       return (this->size == 0);
     };
 
+    /**
+     * @brief Returns the size of the queue
+     */
     int queueSize() {
       return this->size;
     };
 
+    /**
+     * @brief Enqueues a generic type
+     * @param data An element of the type parameterized by the class
+     */
     void enqueue(MessageType data) {
       Node<MessageType>* aux;
       Node<MessageType>* newNode = new Node(data);
@@ -47,6 +57,10 @@ class Queue{
       this->size++;
     };
 
+    /**
+     * @brief Dequeues a generic type
+     * @param data An element of the type parameterized by the class
+     */
     MessageType dequeue() {
       Node<MessageType>* aux;
       MessageType nodeData;
@@ -68,6 +82,9 @@ class Queue{
       return nodeData;
     };
 
+    /**
+     * @brief Flush the queue
+     */
     void flushQueue() {
       while(!(isEmpty())) {
         dequeue();
@@ -88,22 +105,37 @@ class Component : public Linkable {
 
     Component() : messageQueue() {};
 
+    /** 
+    * @brief Wrapper method 
+    */
     bool isQueueEmpty() {
       return messageQueue.isEmpty();
     };
 
+    /** 
+    * @brief Wrapper method 
+    */
     int queueSize() {
       return messageQueue.queueSize();
     }
 
+    /** 
+    * @brief Wrapper method 
+    */
     void enqueue(MessageType data) {
       messageQueue.enqueue(data);
     }
 
+    /** 
+    * @brief Wrapper method 
+    */
     MessageType dequeue() {
       return messageQueue.dequeue();
     }
 
+    /** 
+    * @brief Wrapper method 
+    */
     void flushQueue() {
       messageQueue.flushQueue();
     }
