@@ -153,6 +153,8 @@ class BranchTargetBuffer : public Component<BTBMessage> {
          */
         void updateBlock(uint32_t fetchAddress, bool* executedInstructions);
 
+        void componentClock() override;
+
         ~BranchTargetBuffer();
 };
 
