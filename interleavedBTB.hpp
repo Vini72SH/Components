@@ -29,6 +29,7 @@ enum TypeBTBMessage {
 };
 
 struct BTBMessage {
+    int channelID;
     uint32_t fetchAddress;
     uint32_t nextBlock;
     uint32_t* fetchTargets;

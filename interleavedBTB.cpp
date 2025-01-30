@@ -176,6 +176,7 @@ void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstru
 };
 
 void BranchTargetBuffer::componentClock() {
+    int id;
     uint32_t fetchAddress;
     uint32_t* fetchTargets;
     bool* executedInstructions;
@@ -187,6 +188,7 @@ void BranchTargetBuffer::componentClock() {
         switch (currentMessage.messageType) {
             // BTB recebe um pedido, efetuar o fetch e transmitir dados
             case BTB_REQUEST:
+                id = currentMessage.channelID;
                 TypeBTBMessage queryResponse;
                 fetchAddress = currentMessage.fetchAddress;
 
@@ -197,7 +199,7 @@ void BranchTargetBuffer::componentClock() {
                 newMessage.nextBlock = this->getNextFetchBlock();
                 newMessage.validBits = this->getInstructionValidBits();
                 
-                // Enviar nova mensagem para outro componente
+                //this->SendMessage(newMessage, id);
                 break;
 
             // Pedido para alocação de uma nova entrada na BTB 
