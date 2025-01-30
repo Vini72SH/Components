@@ -115,7 +115,7 @@ uint32_t BranchTargetBuffer::getNextFetchBlock() {
     return nextFetchBlock;
 };
 
-const bool* BranchTargetBuffer::getInstructionValidBits() {
+bool* BranchTargetBuffer::getInstructionValidBits() {
     return instructionValidBits;
 };
 
@@ -128,7 +128,7 @@ void BranchTargetBuffer::registerNewBlock(uint32_t fetchAddress, uint32_t* fetch
     }
 };
 
-int BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
+TypeBTBMessage BranchTargetBuffer::fetchBTBEntry(uint32_t fetchAddress) {
     bool alocated = true;
     uint32_t nextBlock = 0;
     uint32_t currentTag = calculateTag(fetchAddress);
@@ -172,6 +172,54 @@ void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstru
                 banks[bank][index].updatePrediction(executedInstructions[bank]);
             }
         }
+    }
+};
+
+void BranchTargetBuffer::componentClock() {
+    uint32_t fetchAddress;
+    uint32_t* fetchTargets;
+    bool* executedInstructions;
+    BTBMessage currentMessage;
+
+    while (!(this->isQueueEmpty())) {
+        currentMessage = this->dequeue();
+
+        switch (currentMessage.messageType) {
+            // BTB recebe um pedido, efetuar o fetch e transmitir dados
+            case BTB_REQUEST:
+                TypeBTBMessage queryResponse;
+                fetchAddress = currentMessage.fetchAddress;
+
+                queryResponse = fetchBTBEntry(fetchAddress);
+                
+                BTBMessage newMessage;
+                newMessage.messageType = queryResponse;
+                newMessage.nextBlock = this->getNextFetchBlock();
+                newMessage.validBits = this->getInstructionValidBits();
+                
+                // Enviar nova mensagem para outro componente
+                break;
+
+            // Pedido para alocação de uma nova entrada na BTB 
+            case BTB_ALLOCATION_REQUEST:
+                fetchAddress = currentMessage.fetchAddress;
+                fetchTargets = currentMessage.fetchTargets;
+
+                this->registerNewBlock(fetchAddress, fetchTargets);
+                break;
+
+            // Atualização de entrada já existente
+            case BTB_UPDATE_REQUEST:
+                fetchAddress = currentMessage.fetchAddress;
+                executedInstructions = currentMessage.executedInstructions;
+
+                this->updateBlock(fetchAddress, executedInstructions);
+                break;
+
+            case ALLOCATED_ENTRY:
+            case UNALLOCATED_ENTRY:
+                break;
+            }
     }
 };
 

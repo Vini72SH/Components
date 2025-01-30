@@ -30,8 +30,10 @@ enum TypeBTBMessage {
 
 struct BTBMessage {
     uint32_t fetchAddress;
-    uint32_t *fetchTargets;
-    bool *validBits;
+    uint32_t nextBlock;
+    uint32_t* fetchTargets;
+    bool* validBits;
+    bool* executedInstructions;
     TypeBTBMessage messageType;
 };
 
@@ -127,7 +129,7 @@ class BranchTargetBuffer : public Component<BTBMessage> {
         /**
          * @return The instructions predicted as executable from the instruction block
          */
-        const bool* getInstructionValidBits();
+        bool* getInstructionValidBits();
 
         /**
          * @brief Register a new entry in BTB
@@ -144,7 +146,7 @@ class BranchTargetBuffer : public Component<BTBMessage> {
          * If the entry is not yet allocated, it assumes that the next fetch block is sequential and that all instructions will be executed.
          * @return Returns a message to the procedure calling the method, indicating whether the BTB entry is allocated or not allocated, as these cases require different procedures later.
          */
-        int fetchBTBEntry(uint32_t fetchAddress);
+        TypeBTBMessage fetchBTBEntry(uint32_t fetchAddress);
 
         /**
          * @brief Updates the BTB block based on the instructions that were executed
@@ -152,7 +154,12 @@ class BranchTargetBuffer : public Component<BTBMessage> {
          * @param executedInstructions An array of booleans indicating which instructions were actually executed
          */
         void updateBlock(uint32_t fetchAddress, bool* executedInstructions);
-
+        
+        /**
+         * @brief The behavior of the BTB during a clock cycle
+         * @details The BTB receives several messages during a cycle from different components, 
+         * in this method the message queue is emptied while the BTB receives the message and updates its state.
+         */
         void componentClock() override;
 
         ~BranchTargetBuffer();

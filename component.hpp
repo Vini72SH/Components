@@ -151,7 +151,7 @@ class Component : public Linkable {
      */
     virtual void componentClock() = 0;
 
-    ~Component() {};
+    virtual ~Component() {};
 };
 
 #endif
