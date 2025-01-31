@@ -17,7 +17,7 @@ int main () {
 
     btb->registerNewBlock(128, v2);
 
-    delete btb;
+    delete btb; 
 
     return 0;
 }

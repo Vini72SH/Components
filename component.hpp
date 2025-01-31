@@ -182,10 +182,8 @@ class Component : public Linkable {
      * @brief Component behavior during a clock tick
      * @details This is a virtual method as the components behave differently during a clock cycle.
      * This method will be called on each simulated clock tick to update the state of the simulation.
-     * The component should implement this method in the way it is expected to behave during a clock cycle 
-     * after receiving messages from other components in the previous cycle.
-     * It is recommended that you empty the message queue inside this method while defining its behavior 
-     * for each type of message that the component may have received previously.
+     * Using this method, the expected behavior of the component must be defined at each clock cycle, 
+     * its interactions with other components and message handling.
      */
     virtual void componentClock() = 0;
 
