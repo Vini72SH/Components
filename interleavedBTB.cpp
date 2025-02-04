@@ -176,53 +176,7 @@ void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstru
 };
 
 void BranchTargetBuffer::componentClock() {
-    int id;
-    uint32_t fetchAddress;
-    uint32_t* fetchTargets;
-    bool* executedInstructions;
-    BTBMessage currentMessage;
 
-    while (!(this->isQueueEmpty())) {
-        currentMessage = this->dequeue();
-
-        switch (currentMessage.messageType) {
-            // BTB recebe um pedido, efetuar o fetch e transmitir dados
-            case BTB_REQUEST:
-                id = currentMessage.channelID;
-                TypeBTBMessage queryResponse;
-                fetchAddress = currentMessage.fetchAddress;
-
-                queryResponse = fetchBTBEntry(fetchAddress);
-                
-                BTBMessage newMessage;
-                newMessage.messageType = queryResponse;
-                newMessage.nextBlock = this->getNextFetchBlock();
-                newMessage.validBits = this->getInstructionValidBits();
-                
-                //this->SendMessage(newMessage, id);
-                break;
-
-            // Pedido para alocação de uma nova entrada na BTB 
-            case BTB_ALLOCATION_REQUEST:
-                fetchAddress = currentMessage.fetchAddress;
-                fetchTargets = currentMessage.fetchTargets;
-
-                this->registerNewBlock(fetchAddress, fetchTargets);
-                break;
-
-            // Atualização de entrada já existente
-            case BTB_UPDATE_REQUEST:
-                fetchAddress = currentMessage.fetchAddress;
-                executedInstructions = currentMessage.executedInstructions;
-
-                this->updateBlock(fetchAddress, executedInstructions);
-                break;
-
-            case ALLOCATED_ENTRY:
-            case UNALLOCATED_ENTRY:
-                break;
-            }
-    }
 };
 
 BranchTargetBuffer::~BranchTargetBuffer() {
