@@ -3,7 +3,7 @@
 
 #include <cstdio>
 #include <sys/types.h>
-#include "linkable.hpp"
+#include "queue.hpp"
 
 /**
  * @details All components shall inherit from this class. The MessageType type
@@ -21,7 +21,6 @@
 template <typename MessageType>
 class Component {
   private:
-    clientLinkable<MessageType>* client;
     Queue<MessageType> messageQueue;
 
   public:
