@@ -1,8 +1,8 @@
 # Variáveis
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Wall -std=c++17 -g
-TARGET = componentTest
-SRC = componentTest.cpp interleavedBTB.cpp
+TARGET = test
+SRC = test.cpp buffer.cpp
 OBJ = $(SRC:.cpp=.o)
 
 # Regras

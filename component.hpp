@@ -3,7 +3,6 @@
 
 #include <cstdio>
 #include <sys/types.h>
-#include "queue.hpp"
 
 /**
  * @details All components shall inherit from this class. The MessageType type
@@ -21,10 +20,9 @@
 template <typename MessageType>
 class Component {
   private:
-    Queue<MessageType> messageQueue;
 
   public:
-    Component() : messageQueue() {};
+    Component() {};
 
     /**
      * @brief This method should be called by other components to send a message
@@ -50,41 +48,6 @@ class Component {
      */
     inline int RetrieveResponse(MessageType* message, int channelID) {
         return this->RetrieveResponseLinkable((const char*)&message, channelID);
-    }
-    
-    /** 
-    * @brief Wrapper method 
-    */
-    bool isQueueEmpty() {
-      return messageQueue.isEmpty();
-    };
-
-    /** 
-    * @brief Wrapper method 
-    */
-    int queueSize() {
-      return messageQueue.queueSize();
-    }
-
-    /** 
-    * @brief Wrapper method 
-    */
-    void enqueue(MessageType data) {
-      messageQueue.enqueue(data);
-    }
-
-    /** 
-    * @brief Wrapper method 
-    */
-    MessageType dequeue() {
-      return messageQueue.dequeue();
-    }
-
-    /** 
-    * @brief Wrapper method 
-    */
-    void flushQueue() {
-      messageQueue.flushQueue();
     }
 
     /**
