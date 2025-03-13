@@ -161,7 +161,7 @@ class BranchTargetBuffer : public Component<BTBMessage> {
          * @details The BTB receives several messages during a cycle from different components, 
          * in this method the message queue is emptied while the BTB receives the message and updates its state.
          */
-        void componentClock() override;
+        void Clock();
 
         ~BranchTargetBuffer();
 };

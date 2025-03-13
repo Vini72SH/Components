@@ -175,7 +175,7 @@ void BranchTargetBuffer::updateBlock(uint32_t fetchAddress, bool* executedInstru
     }
 };
 
-void BranchTargetBuffer::componentClock() {
+void BranchTargetBuffer::Clock(){
 
 };
 

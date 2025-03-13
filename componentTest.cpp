@@ -1,23 +1,23 @@
-#include <cstdint>
+#include "component.hpp"
 #include <cstdio>
 #include <cstdlib>
-#include "interleavedBTB.hpp"
 
 using namespace std;
 
 int main () {
-    uint32_t v1[] = {10, 20, 30, 40};
-    uint32_t v2[] = {15, 25, 35, 45};
+    sinuca::DebugComponent* debugComponent = new sinuca::DebugComponent();
+    sinuca::DebugComponent* otherComponent = new sinuca::DebugComponent();
 
-    BranchTargetBuffer* btb = new BranchTargetBuffer();
+    debugComponent->otherComponent = otherComponent;
+    debugComponent->id = otherComponent->Connect(10);
 
-    btb->allocate(4, 4);
+    for(int i = 0; i < 10; ++i) {
+        debugComponent->Clock();
+        otherComponent->Clock();
+    }
 
-    btb->registerNewBlock(64, v1);
-
-    btb->registerNewBlock(128, v2);
-
-    delete btb; 
+    delete otherComponent;                                              
+    delete debugComponent;          
 
     return 0;
 }

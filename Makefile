@@ -2,7 +2,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Wall -std=c++17 -g
 TARGET = componentTest
-SRC = componentTest.cpp interleavedBTB.cpp
+SRC = componentTest.cpp linkable.cpp circularBuffer.cpp
 OBJ = $(SRC:.cpp=.o)
 
 # Regras

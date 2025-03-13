@@ -1,9 +1,32 @@
-#ifndef COMPONENT 
-#define COMPONENT
+#ifndef SINUCA3_ENGINE_COMPONENT_HPP_
+#define SINUCA3_ENGINE_COMPONENT_HPP_
 
-#include <cstdio>
-#include <sys/types.h>
+//
+// Copyright (C) 2024  HiPES - Universidade Federal do Paraná
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+/**
+ * @file component.hpp
+ * @brief Public API of the component template class.
+ */
+
 #include "linkable.hpp"
+#include <cstdio>
+
+namespace sinuca {
 
 /**
  * @details All components shall inherit from this class. The MessageType type
@@ -19,85 +42,119 @@
  * value.
  */
 template <typename MessageType>
-class Component {
-  private:
-    clientLinkable<MessageType>* client;
-    Queue<MessageType> messageQueue;
-
+class Component : public engine::Linkable {
   public:
-    Component() : messageQueue() {};
+    /**
+     * @param messageSize The size of the message that will be used by the
+     * component.
+     */
+    inline Component() : engine::Linkable(sizeof(MessageType)) {}
 
     /**
-     * @brief This method should be called by other components to send a message
-     * to the component.
-     * @param message The message to send.
-     * @param channelID The ID of the channel on which to send the message.
-     * @returns Non-zero if the message cannot be sent (i.e., there's no space
-     * left for buffering, case where the sender may want to buffer itself the
-     * message for trying again in the next cycles or just give up trying to
-     * send). 0 otherwise.
+     * @brief Wrapper to SendRequestToLinkable method
      */
-    inline int SendMessage(const MessageType message, int channelID) {
-        return this->SendMessageLinkable((const char*)&message, channelID);
-    }
-    /**
-     * @brief This method should be called by other components to read the
-     * response buffered.
-     * @param message The buffer on which to copy the response message.
-     * @param channelID The ID of the channel from which to retrieve a response.
-     * @returns Non-zero if there's no response buffered yet. In this case,
-     * message is not touched. 0 otherwise, and message is populated with the
-     * response.
-     */
-    inline int RetrieveResponse(MessageType* message, int channelID) {
-        return this->RetrieveResponseLinkable((const char*)&message, channelID);
-    }
-    
-    /** 
-    * @brief Wrapper method 
-    */
-    bool isQueueEmpty() {
-      return messageQueue.isEmpty();
+    inline bool SendRequestToComponent(Linkable* component, int connectionID,
+                                       void* messageInput) {
+        return this->SendRequestToLinkable(component, connectionID,
+                                           messageInput);
     };
 
-    /** 
-    * @brief Wrapper method 
-    */
-    int queueSize() {
-      return messageQueue.queueSize();
-    }
-
-    /** 
-    * @brief Wrapper method 
-    */
-    void enqueue(MessageType data) {
-      messageQueue.enqueue(data);
-    }
-
-    /** 
-    * @brief Wrapper method 
-    */
-    MessageType dequeue() {
-      return messageQueue.dequeue();
-    }
-
-    /** 
-    * @brief Wrapper method 
-    */
-    void flushQueue() {
-      messageQueue.flushQueue();
-    }
+    /**
+     * @brief Wrapper to SendResponseToLinkable method
+     */
+    inline bool SendResponseToComponent(Linkable* component, int connectionID,
+                                        void* messageInput) {
+        return this->SendResponseToLinkable(component, connectionID,
+                                            messageInput);
+    };
 
     /**
-     * @brief Component behavior during a clock tick
-     * @details This is a virtual method as the components behave differently during a clock cycle.
-     * This method will be called on each simulated clock tick to update the state of the simulation.
-     * Using this method, the expected behavior of the component must be defined at each clock cycle, 
-     * its interactions with other components and message handling.
+     * @brief Wrapper to ReceiveRequestFromLinkable method
      */
-    virtual void componentClock() = 0;
+    inline bool ReceiveRequestFromComponent(Linkable* component,
+                                            int connectionID,
+                                            void* messageOutput) {
+        return this->ReceiveRequestFromLinkable(component, connectionID,
+                                                messageOutput);
+    };
 
-    virtual ~Component() {};
+    /**
+     * @brief Wrapper to ReceiveResponseFromLinkable method
+     */
+    inline bool ReceiveResponseFromComponent(Linkable* component,
+                                             int connectionID,
+                                             void* messageOutput) {
+        return this->ReceiveResponseFromLinkable(component, connectionID,
+                                                 messageOutput);
+    };
+
+    /**
+     * @brief Wrapper to SendRequestToConnection method
+     */
+    inline bool SendRequestForConnection(int connectionID, void* messageInput) {
+        return this->SendRequestToConnection(connectionID, messageInput);
+    };
+
+    /**
+     * @brief Wrapper to SendResponseToConnection method
+     */
+    inline bool SendResponseForConnection(int connectionID,
+                                          void* messageInput) {
+        return this->SendResponseToConnection(connectionID, messageInput);
+    };
+
+    /**
+     * @brief Wrapper to ReceiveRequestFromConnection method
+     */
+    inline bool ReceiveRequestForAConnection(int connectionID,
+                                             void* messageOutput) {
+        return this->ReceiveRequestFromConnection(connectionID, messageOutput);
+    };
+
+    /**
+     * @brief Wrapper to ReceiveResponseFromConnection method
+     */
+    inline bool ReceiveResponseForAConnection(int connectionID,
+                                              void* messageOutput) {
+        return this->ReceiveResponseFromConnection(connectionID, messageOutput);
+    };
+
+    /**
+     * @brief Connect to *this* component.
+     * @param bufferSize The size of the buffer used in the connection.
+     * @param messageSize The size of the message stored in the buffer.
+     * @details Method used by other components to connect to *this* component,
+     * establishing a connection where *this* component is the one that responds
+     * to received messages.
+     * @return Returns the id of connection on the receiving component
+     */
+     int ConnectToComponent(int bufferSize) {
+        return this->Connect(bufferSize);
+     };
+
+    inline virtual ~Component() {};
 };
 
-#endif
+class DebugComponent : public Component<int> {
+  public:
+    int id;
+    DebugComponent* otherComponent;
+
+    DebugComponent() : sinuca::Component<int> (), otherComponent(nullptr) {};
+
+    void Clock() override {
+      if (otherComponent) {
+        int message = 1;
+        SendRequestToComponent(otherComponent, id, &message);
+        printf("ENVIANDO MENSAGEM DE %d PARA %d\n", id, otherComponent->id);
+      }
+
+      
+    };
+
+    int FinishSetup() override { return 0; }
+};
+
+}  // namespace sinuca
+
+#endif  // SINUCA3_ENGINE_COMPONENT_HPP_
