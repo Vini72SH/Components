@@ -1,29 +1,21 @@
-#include "buffer.hpp"
-#include <iostream>
+#include "component.hpp"
 
 using namespace std;
 
 int main () {
-    Buffer b;
+    sinuca::EngineDebugComponent* debug = new sinuca::EngineDebugComponent();
+    sinuca::EngineDebugComponent* otherComponent = new sinuca::EngineDebugComponent();
 
-    b.allocate(5, sizeof(int));
+    debug->otherComponent = otherComponent;
+    debug->connectionID = otherComponent->ConnectToComponent(5);
 
-    int x;
-    int *y;
     for (int i = 0; i < 5; ++i) {
-        x = i + 10;
-        b.enqueue(&x);
-        cout << "Fim do Buffer: " << b.getEnd() << '\n';
+        debug->Clock();
+        otherComponent->Clock();
     }
 
-    for (int i = 0; i < 8; ++i) {
-        y = (int *)b.dequeue();
-
-        if (y) {
-            cout << "Elemento: " << *y << '\n';
-        }
-        cout << "Começo do Buffer: " << b.getStart() << '\n';
-    }
+    delete debug;
+    delete otherComponent;
 
     return 0;
 }
